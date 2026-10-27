@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeepScan AI | Lung Image Analysis Demo</title>
+<style>
+:root{--bg:#08111f;--panel:#101d30;--panel2:#14243b;--text:#edf4ff;--muted:#9fb0c8;--cyan:#42d6e8;--blue:#528bff;--line:#263954;--green:#39d98a;--yellow:#ffcc66;--red:#ff7185}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:radial-gradient(circle at top right,#142e4c 0,#08111f 48%);color:var(--text);min-height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px max(5%,calc((100% - 1100px)/2));border-bottom:1px solid var(--line);background:#08111fd9;position:sticky;top:0;backdrop-filter:blur(12px);z-index:2}
+.brand{font-weight:800;font-size:1.25rem;letter-spacing:.3px}.brand span{color:var(--cyan)}.tag{font-size:.78rem;color:var(--muted);border:1px solid var(--line);padding:6px 10px;border-radius:99px}
+main{max-width:1100px;margin:34px auto;padding:0 18px}.hero{margin-bottom:26px}.eyebrow{color:var(--cyan);font-size:.78rem;text-transform:uppercase;letter-spacing:2px;font-weight:700}.hero h1{font-size:clamp(2rem,5vw,3.25rem);line-height:1.08;margin:10px 0}.hero p{color:var(--muted);max-width:720px;line-height:1.7}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.card{background:linear-gradient(160deg,#122139,#0d192a);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 18px 45px #0002}.card h2{font-size:1.08rem;margin:0 0 8px}.sub{color:var(--muted);font-size:.9rem;line-height:1.6;margin:0 0 18px}
+.drop{border:1.5px dashed #3e5c7c;border-radius:16px;padding:24px;text-align:center;background:#0a1728;cursor:pointer;transition:.2s}.drop:hover{border-color:var(--cyan);background:#0e2034}.drop strong{display:block;margin:8px 0}.drop small{color:var(--muted)}
+input[type=file]{display:none}.preview{width:100%;max-height:320px;object-fit:contain;border-radius:12px;margin-top:14px;display:none;background:#050b14}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:750;cursor:pointer}.primary{background:linear-gradient(90deg,var(--cyan),var(--blue));color:#06121e}.secondary{background:#1b2c45;color:var(--text);border:1px solid var(--line)}.btn:disabled{opacity:.4;cursor:not-allowed}
+.notice{font-size:.8rem;color:var(--yellow);line-height:1.55;margin-top:14px}.result{min-height:260px;display:flex;flex-direction:column;justify-content:center}.empty{text-align:center;color:var(--muted);padding:28px 5px}.empty .symbol{font-size:2.4rem}.resultbox{display:none}.status{display:inline-flex;border-radius:99px;padding:6px 10px;font-size:.78rem;font-weight:800;letter-spacing:.5px}.status.low{background:#123d32;color:var(--green)}.status.medium{background:#49371b;color:var(--yellow)}.status.high{background:#4b202c;color:var(--red)}.resultbox h3{font-size:1.65rem;margin:14px 0 6px}.muted{color:var(--muted);line-height:1.6}.meter{height:9px;background:#26364c;border-radius:99px;overflow:hidden;margin:12px 0}.meter div{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));transition:width .5s}.meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.mini{padding:12px;background:#0b1728;border:1px solid var(--line);border-radius:12px}.mini small{display:block;color:var(--muted);margin-bottom:5px}.mini strong{font-size:.95rem}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px}.step{border:1px solid var(--line);background:#0c192a;border-radius:12px;padding:12px;font-size:.82rem;color:var(--muted)}.step b{display:block;color:var(--text);margin-bottom:5px}
+footer{max-width:1100px;margin:22px auto 40px;padding:0 18px;color:var(--muted);font-size:.82rem;line-height:1.6}.footerline{border-top:1px solid var(--line);padding-top:18px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}header{padding:15px 18px}.tag{font-size:.68rem}}
+</style>
+</head>
+<body>
+<header><div class="brand">DeepScan <span>AI</span></div><div class="tag">Healthcare AI • Prototype</div></header>
+<main>
+<section class="hero">
+<div class="eyebrow">AI-assisted medical image demo</div>
+<h1>Lung Image<br><span style="color:var(--cyan)">Analysis System</span></h1>
+<p>A student project prototype demonstrating an image-upload workflow and a sample result interface. This version does not contain a trained medical AI model and must not be used for diagnosis.</p>
+</section>
+<div class="grid">
+<section class="card">
+<h2>Upload an image</h2><p class="sub">Choose a sample CT scan or X-ray image file to preview the interface workflow.</p>
+<label class="drop" for="imageInput"><span style="font-size:1.8rem">＋</span><strong>Tap to select an image</strong><small>PNG, JPG, JPEG or WEBP</small></label>
+<input id="imageInput" type="file" accept="image/*">
+<img id="preview" class="preview" alt="Selected medical image preview">
+<div class="actions"><button id="analyzeBtn" class="btn primary" disabled>Run demo analysis</button><button id="resetBtn" class="btn secondary">Reset</button></div>
+<div class="notice">Important: This is a UI demonstration only. It does not analyze image pixels or detect cancer.</div>
+</section>
+<section class="card result">
+<div id="emptyState" class="empty"><div class="symbol">⌁</div><h2>Analysis result</h2><p>Select an image to enable the demo workflow.</p></div>
+<div id="resultBox" class="resultbox">
+<span id="riskBadge" class="status medium">DEMO RESULT</span>
+<h3 id="resultTitle">Sample output</h3>
+<p id="resultText" class="muted"></p>
+<div class="meta"><div class="mini"><small>Demo score</small><strong id="score">—</strong></div><div class="mini"><small>Input file</small><strong id="fileName">—</strong></div></div>
+<div class="meter"><div id="meterFill"></div></div>
+<p class="muted" style="font-size:.82rem">The score is illustrative, not a clinically valid confidence score. A qualified clinician must assess medical images.</p>
+</div>
+</section>
+</div>
+<section class="card" style="margin-top:18px">
+<h2>Prototype workflow</h2><p class="sub">Intended architecture for a future validated system. The current demo only supports image selection and sample UI output.</p>
+<div class="steps"><div class="step"><b>01 · Upload</b>Select a medical image</div><div class="step"><b>02 · Preprocess</b>Planned image preparation</div><div class="step"><b>03 · AI model</b>Trained model integration planned</div><div class="step"><b>04 · Review</b>Clinician review required</div></div>
+</section>
+</main>
+<footer><div class="footerline"><strong>DeepScan AI</strong> · Student prototype<br>Developed by Rathod Studios<br>Medical disclaimer: This software is not a medical device, does not provide a diagnosis, and should not guide treatment decisions.</div></footer>
+<script>
+const input=document.getElementById('imageInput');
+const preview=document.getElementById('preview');
+const analyze=document.getElementById('analyzeBtn');
+const reset=document.getElementById('resetBtn');
+const empty=document.getElementById('emptyState');
+const result=document.getElementById('resultBox');
+let objectUrl=null;
+input.addEventListener('change',()=>{
+  const file=input.files && input.files[0];
+  if(!file){resetAll();return;}
+  if(!file.type.startsWith('image/')){alert('Please select an image file.');input.value='';return;}
+  if(objectUrl) URL.revokeObjectURL(objectUrl);
+  objectUrl=URL.createObjectURL(file);
+  preview.src=objectUrl;preview.style.display='block';analyze.disabled=false;
+  empty.style.display='none';result.style.display='none';
+});
+analyze.addEventListener('click',()=>{
+  const file=input.files && input.files[0]; if(!file)return;
+  // Demonstration-only sample output. It is intentionally not a medical prediction.
+  const name=file.name.toLowerCase();
+  let label='Sample low-risk output', score=20, cls='low';
+  if(name.includes('cancer')){label='Sample high-risk output';score=85;cls='high';}
+  else if(name.includes('medium')){label='Sample medium-risk output';score=50;cls='medium';}
+  const badge=document.getElementById('riskBadge');
+  badge.className='status '+cls;badge.textContent='DEMO ONLY';
+  document.getElementById('resultTitle').textContent=label;
+  document.getElementById('resultText').textContent='This example output is selected from the filename for interface testing only. No AI model has analyzed this image.';
+  document.getElementById('score').textContent=score+'% (illustrative)';
+  document.getElementById('fileName').textContent=file.name.length>22?file.name.slice(0,19)+'…':file.name;
+  document.getElementById('meterFill').style.width=score+'%';
+  empty.style.display='none';result.style.display='block';
+});
+reset.addEventListener('click',resetAll);
+function resetAll(){
+  input.value='';preview.removeAttribute('src');preview.style.display='none';analyze.disabled=true;
+  empty.style.display='block';result.style.display='none';
+  if(objectUrl){URL.revokeObjectURL(objectUrl);objectUrl=null;}
+}
+</script>
+</body>
+</html>
